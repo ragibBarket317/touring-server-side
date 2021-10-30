@@ -1,5 +1,6 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
+const ObjectId = require('mongodb').ObjectId;
 require('dotenv').config()
 const cors = require('cors');
 const app = express();
@@ -12,17 +13,37 @@ app.use(express.json());
 //DATABASE CONECTION
 const uri = `mongodb+srv://${process.env.DB_NAME}:${process.env.DB_PASS}@cluster0.y5uft.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-console.log(uri);
+
 async function run() {
     try {
         await client.connect();
         const database = client.db('fun_touring');
         const placeCollection = database.collection('places');
+        const userCollection = database.collection('users');
 
         app.get('/places', async (req, res) => {
             const cursor = placeCollection.find({});
             const places = await cursor.toArray();
             res.send(places);
+        });
+        app.get('/users', async (req, res) => {
+            const cursor = userCollection.find({});
+            const users = await cursor.toArray();
+            res.send(users);
+        });
+        // Find One id
+        app.get('/places/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const user = await placeCollection.findOne(query);
+            res.send(user);
+        });
+        // POST API
+        app.post('/users', async (req, res) => {
+            const newUser = req.body;
+            const result = await userCollection.insertOne(newUser)
+            console.log('hitting the server', newUser)
+            res.json(result);
         });
     }
     finally {
