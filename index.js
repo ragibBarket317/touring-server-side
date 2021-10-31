@@ -20,12 +20,13 @@ async function run() {
         const database = client.db('fun_touring');
         const placeCollection = database.collection('places');
         const userCollection = database.collection('users');
-
+        //Get Places
         app.get('/places', async (req, res) => {
             const cursor = placeCollection.find({});
             const places = await cursor.toArray();
             res.send(places);
         });
+        //Get Users
         app.get('/users', async (req, res) => {
             const cursor = userCollection.find({});
             const users = await cursor.toArray();
@@ -38,13 +39,28 @@ async function run() {
             const user = await placeCollection.findOne(query);
             res.send(user);
         });
-        // POST API
+        // POST User API
         app.post('/users', async (req, res) => {
             const newUser = req.body;
             const result = await userCollection.insertOne(newUser)
             console.log('hitting the server', newUser)
             res.json(result);
         });
+        // POST Places API
+        app.post('/places', async (req, res) => {
+            const newUser = req.body;
+            const result = await placeCollection.insertOne(newUser)
+            console.log('hitting the server', req.body)
+            res.json(result);
+        });
+        // DELETE API
+        app.delete('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await userCollection.deleteOne(query);
+            console.log('deleting user id', id);
+            res.json(result);
+        })
     }
     finally {
         // await client.close();
